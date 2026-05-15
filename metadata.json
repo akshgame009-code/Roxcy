@@ -1,0 +1,8 @@
+{
+  "name": "Sassy Voice Assistant",
+  "description": "A real-time, voice-to-voice AI assistant with a witty and sassy persona.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
