@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['text', 'role', 'timestamp', 'userId']) &&
+             data.keys().size() == 4 &&
+             data.text is string && data.text.size() <= 5000 &&
+             data.role in ['user', 'model'] &&
+             data.timestamp is timestamp &&
+             data.userId == request.auth.uid;
+    }
+
+    match /messages/{messageId} {
+      allow create: if isSignedIn() && isValidMessage(request.resource.data);
+      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // No updates or deletes allowed for simplicity/integrity of history
+      allow update, delete: if false;
+    }
+  }
+}
